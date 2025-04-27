@@ -30,6 +30,7 @@ def get_question_responses(
     
     # For numeric rating questions
     if question_id in ["q1_rating", "q2_rating", "q4_rating"]:
+        
         if group_by:
             # Group responses by the specified demographic
             query = db.query(
@@ -56,7 +57,6 @@ def get_question_responses(
                     getattr(Survey, question_id) == i
                 ).scalar()
                 distribution[str(i)] = count
-            
             return [{
                 "average": float(result.average),
                 "min": result.min,

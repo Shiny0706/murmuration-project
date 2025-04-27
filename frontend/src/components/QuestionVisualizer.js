@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { 
   Chart as ChartJS, 
@@ -28,11 +29,12 @@ ChartJS.register(
 
 const API_URL = 'http://localhost:8000';
 
-function QuestionVisualizer({ questionId, hasData }) {
+function QuestionVisualizer({ questionId }) {
   const [data, setData] = useState(null);
   const [groupBy, setGroupBy] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { data: surveyData } = useSelector((state) => state.survey);
 
   const groupOptions = [
     { value: null, label: 'Overall' },
@@ -43,6 +45,8 @@ function QuestionVisualizer({ questionId, hasData }) {
   ];
 
   const fetchData = async () => {
+    if (!surveyData || surveyData.length === 0) return;
+    
     setLoading(true);
     setError('');
     try {
@@ -58,10 +62,10 @@ function QuestionVisualizer({ questionId, hasData }) {
   };
 
   useEffect(() => {
-    if (hasData) {
+    if (surveyData && surveyData.length > 0) {
       fetchData();
     }
-  }, [questionId, groupBy, hasData]);
+  }, [questionId, groupBy, surveyData]);
 
   const isRatingQuestion = ['q1_rating', 'q2_rating', 'q4_rating'].includes(questionId);
   
@@ -72,6 +76,10 @@ function QuestionVisualizer({ questionId, hasData }) {
     if (isRatingQuestion) {
       if (!groupBy) {
         // Overall ratings
+        if (!data || !data[0] || !data[0].distribution) {
+          return null;
+        }
+        
         const chartData = {
           labels: Object.keys(data[0].distribution),
           datasets: [
@@ -99,6 +107,10 @@ function QuestionVisualizer({ questionId, hasData }) {
         return chartData;
       } else {
         // Grouped ratings
+        if (!data || !Array.isArray(data)) {
+          return null;
+        }
+        console.log("Grouped Data:", data);
         const labels = data.map(item => item.group);
         const chartData = {
           labels,
@@ -120,7 +132,11 @@ function QuestionVisualizer({ questionId, hasData }) {
     else {
       if (!groupBy) {
         // Overall responses (top 5 most common)
-        const sortedResponses = [...data[0].responses].sort((a, b) => b.count - a.count).slice(0, 5);
+        console.log("Data", data);
+        if (!data.responses || !data.responses[0] || !data.responses[0].responses) {
+          return null;
+        }
+        const sortedResponses = [...data.responses[0].responses].sort((a, b) => b.count - a.count).slice(0, 5);
         
         const chartData = {
           labels: sortedResponses.map(item => item.response.substring(0, 30) + (item.response.length > 30 ? '...' : '')),
@@ -199,74 +215,52 @@ function QuestionVisualizer({ questionId, hasData }) {
         </div>
       )}
 
-      {!hasData && !loading && (
-        <div className="text-center py-10">
-          <p className="text-gray-500">
-            Please upload survey data to see visualizations
-          </p>
+      {!loading && !error && chartData && (
+        <div className="bg-white p-4 rounded-lg shadow">
+          {isRatingQuestion && !groupBy ? (
+            <Pie
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  },
+                  title: {
+                    display: true,
+                    text: 'Rating Distribution'
+                  }
+                }
+              }}
+            />
+          ) : (
+            <Bar
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  },
+                  title: {
+                    display: true,
+                    text: groupBy ? 'Average Rating by Group' : 'Top 5 Most Common Responses'
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                }
+              }}
+            />
+          )}
         </div>
       )}
 
-      {!loading && !error && data && (
-        <div>
-          {chartData ? (
-            <div className="h-80">
-              {isRatingQuestion && !groupBy ? (
-                <Pie 
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                      title: {
-                        display: true,
-                        text: 'Rating Distribution',
-                      },
-                    },
-                  }}
-                />
-              ) : (
-                <Bar
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                      title: {
-                        display: true,
-                        text: isRatingQuestion 
-                          ? 'Average Ratings by Group' 
-                          : 'Most Common Responses',
-                      },
-                    },
-                  }}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-5">
-              <div className="flex">
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
-                    Open-ended responses with grouping cannot be visualized effectively with a chart.
-                    Please view the raw data below.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6">
-            <h3 className="text-md font-medium text-gray-900 mb-2">Raw Data</h3>
-            <div className="bg-gray-50 p-4 rounded max-h-96 overflow-auto">
-              <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
-            </div>
-          </div>
+      {!loading && !error && !chartData && (
+        <div className="text-center text-gray-500 py-4">
+          No chart data available for this view
         </div>
       )}
     </div>

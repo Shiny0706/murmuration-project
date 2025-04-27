@@ -1,7 +1,30 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 
-function DataTable({ data }) {
-  console.log("TableData", data);
+function DataTable() {
+  const { data, loading, error } = useSelector((state) => state.survey);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-md bg-red-50 p-4">
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-red-800">Error</h3>
+          <div className="mt-2 text-sm text-red-700">
+            <p>{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!data || data.length === 0) {
     return (
       <div className="text-center py-4 text-gray-500">
