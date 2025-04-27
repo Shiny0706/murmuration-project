@@ -52,8 +52,8 @@ async def upload_csv(
             db.add(survey)
         
         db.commit()
-        
-        return {"detail": f"Successfully uploaded {len(survey_data)} survey records"}
+        surveys = db.query(Survey).all()
+        return {"detail": f"Successfully uploaded {len(survey_data)} survey records", "surveys": surveys}
     
     except Exception as e:
         db.rollback()

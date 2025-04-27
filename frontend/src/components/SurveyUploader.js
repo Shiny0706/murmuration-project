@@ -42,6 +42,7 @@ function SurveyUploader({ onUploadSuccess }) {
       });
 
       setSuccess(response.data.detail || 'Upload successful!');
+      console.log(response.data.surveys);
       setFile(null);
       if (onUploadSuccess) {
         onUploadSuccess();

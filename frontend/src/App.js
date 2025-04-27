@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SurveyUploader from './components/SurveyUploader';
 import QuestionVisualizer from './components/QuestionVisualizer';
+import DataTable from './components/DataTable';
 
 function App() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -28,6 +29,11 @@ function App() {
             <SurveyUploader onUploadSuccess={() => setUploadSuccess(true)} />
           </div>
           
+          <div className="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Survey Data Table</h2>
+            <DataTable data={[]} />
+          </div>
+            
           <div className="bg-white shadow rounded-lg p-6 mb-8">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Select Question to Visualize</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
