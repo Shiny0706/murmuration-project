@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database.db import Base
+from sqlalchemy import Boolean
 
 class Survey(Base):
     __tablename__ = "surveys"
@@ -18,4 +19,5 @@ class Survey(Base):
     q3_open = Column(Text)
     q4_rating = Column(Integer)
     q5_open = Column(Text)
-    sentiment_label = Column(String, index=True) 
+    sentiment_label = Column(String, index=True)
+    is_human = Column(Boolean, default=True)

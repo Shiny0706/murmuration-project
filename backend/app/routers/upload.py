@@ -8,6 +8,19 @@ from app.models.survey import Survey
 
 router = APIRouter()
 
+def detect_human(text: str) -> bool:
+    """
+    Detect if the text is human-generated or AI-generated
+    """
+    if not text or len(text) < 20:
+        return False # Very short text likely AI
+    suspicious_phrases = ["as an AI", "as an assistant", "as a language model", "as a chatbot", "as a virtual assistant", "as a virtual agent", "as a virtual assistant", "as a virtual agent", "as a virtual assistant", "as a virtual agent", "I'm an AI", "I'm an assistant", "I'm a language model", "I'm a chatbot", "I'm a virtual assistant", "I'm a virtual agent", "I'm a virtual assistant", "I'm a virtual agent", "I'm a virtual assistant", "I'm a virtual agent", "AI will"]
+    if any(phrase.lower() in text.lower() for phrase in suspicious_phrases):
+        return False
+    if text.count(".") > 5: # Too formal/long sentences
+        return False
+    return True
+
 @router.post("/upload")
 async def upload_csv(
     file: UploadFile = File(...),
@@ -47,7 +60,8 @@ async def upload_csv(
                 q3_open=data.get('q3_open'),
                 q4_rating=data.get('q4_rating'),
                 q5_open=data.get('q5_open'),
-                sentiment_label=data.get('sentiment_label')
+                sentiment_label=data.get('sentiment_label'),
+                is_human=detect_human(data.get('q5_open') or data.get('q3_open'))
             )
             db.add(survey)
         

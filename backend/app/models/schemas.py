@@ -15,6 +15,7 @@ class SurveyBase(BaseModel):
     q4_rating: int
     q5_open: str
     sentiment_label: str
+    is_human: bool
 
 class SurveyCreate(SurveyBase):
     pass

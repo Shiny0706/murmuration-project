@@ -21,6 +21,10 @@ function DataTable() {
         accessorKey: 'id',
       },
       {
+        header: 'Is Human',
+        accessorKey: 'is_human',
+      },
+      {
         header: 'Gender',
         accessorKey: 'gender',
       },
@@ -50,12 +54,13 @@ function DataTable() {
       },
       {
         header: 'Q5 Response',
-        accessorKey: 'q3_open',
+        accessorKey: 'q5_open',
       },
       {
         header: 'Sentiment Label',
         accessorKey: 'sentiment_label',
       },
+      
     ],
     []
   );
