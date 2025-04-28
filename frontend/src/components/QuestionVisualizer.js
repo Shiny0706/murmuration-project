@@ -39,6 +39,8 @@ function QuestionVisualizer({ questionId }) {
   const groupOptions = [
     { value: null, label: 'Overall' },
     { value: 'gender', label: 'By Gender' },
+    { value: 'state', label: 'By State' },
+    { value: 'city', label: 'By City' },
     { value: 'education_level', label: 'By Education Level' },
     { value: 'sentiment_label', label: 'By Sentiment' },
     { value: 'age', label: 'By Age' }

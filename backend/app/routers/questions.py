@@ -20,7 +20,7 @@ def get_question_responses(
     Optionally group by demographic factors (gender, education_level, sentiment_label)
     """
     valid_questions = ["q1_rating", "q2_rating", "q3_open", "q4_rating", "q5_open"]
-    valid_group_by = ["gender", "education_level", "sentiment_label", "age", None]
+    valid_group_by = ["gender", "education_level", "sentiment_label", "age", "state", "city", None]
     
     if question_id not in valid_questions:
         raise HTTPException(status_code=400, detail=f"Invalid question ID. Must be one of {valid_questions}")
