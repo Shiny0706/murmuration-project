@@ -2,11 +2,31 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from sqlalchemy.orm import Session
 import pandas as pd
 import io
+#when I want to use OpenAi for detect the human written survey start
+# import openai
+# import os
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+#when I want to use OpenAi for detect the human written survey end
 
 from app.database.db import get_db
 from app.models.survey import Survey
 
 router = APIRouter()
+
+#when I want to use OpenAi for detect the human written survey start
+# async def detect_human_openai(text: str) -> bool:
+#     if not text or len(text) < 10:
+#         return False
+#     prompt = f"Decided whether this survey response was written by a human or an AI. Reply with only 'human' or 'ai'.\n\n{text}"
+#     response = await openai.Completion.create(
+#         model="gpt-3.5-turbo",
+#         messages=[{"role": "user", "content": prompt}],
+#         temperature=0.0,
+#         max_tokens=5,
+#     )
+#     return response.choices[0].text.strip().lower() == "human"
+#when I want to use OpenAi for detect the human written survey end
+
 
 def detect_human(text: str) -> bool:
     """

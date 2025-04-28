@@ -4,3 +4,6 @@ sqlalchemy==2.0.23
 pydantic==2.4.2
 python-multipart==0.0.6
 pandas==2.1.2 
+#when I want to use OpenAi for detect the human written survey
+#openai==1.1.0
+
