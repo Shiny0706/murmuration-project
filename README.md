@@ -96,7 +96,7 @@ npm start
 │   ├── public/
 │   ├── src/
 │   │   ├── components/   # React components
-│   │   └── pages/        # Page layouts
+│   │   └── store/        # Redux Store
 │   ├── Dockerfile
 │   └── package.json
 ├── infrastructure/       # Terraform configuration
@@ -106,7 +106,7 @@ npm start
 
 ## Sample Data
 
-The system comes with a sample CSV file that demonstrates the expected format for survey data uploads.
+A sample CSV file (`sample_survey_data.csv`) is included in the repository to demonstrate the expected format for survey data uploads.
 
 ## Author
 
