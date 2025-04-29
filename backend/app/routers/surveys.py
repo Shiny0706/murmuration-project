@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
-
+import base64
 
 from app.database.db import get_db
 from app.models.survey import Survey
@@ -11,6 +11,11 @@ from app.models.schemas import Survey as SurveySchema
 
 router = APIRouter()
 
+def encode_cursor(last_id: int) -> str:
+    return base64.urlsafe_b64encode(str(last_id).encode()).decode()
+
+def decode_cursor(cursor: str) -> int:
+    return int(base64.urlsafe_b64decode(cursor.encode()).decode())
 
 class SurveyListResponse(BaseModel):
     total: int
@@ -45,35 +50,71 @@ class SurveyBase(BaseModel):
             raise ValueError('Invalid state code')
         return v.upper()
 
-@router.get("/surveys", response_model=PaginatedResponse)
+class PaginatedSurveyResponse(BaseModel):
+    items: List[SurveySchema]
+    total: int
+    next_cursor: Optional[str]
+    page_size: int
+    has_more: bool
+    sentiment_counts: dict
+
+@router.get("/surveys", response_model=PaginatedSurveyResponse)
 def get_all_surveys(
     cursor: Optional[str] = None,
-    page_size: int = Query(default=50, ge=1, le=100),
+    page_size: int = Query(50, ge=1, le=100),
+    gender: Optional[str] = None,
+    education_level: Optional[str] = None,
+    state: Optional[str] = None,
+    city: Optional[str] = None,
+    sentiment: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    # Decode cursor if provided
-    last_id = decode_cursor(cursor) if cursor else 0
-    
-    # Query with cursor-based pagination
+    """
+    Get all survey responses with optional filtering and cursor-based pagination.
+    """
     query = db.query(Survey)
-    if last_id:
+
+    # Apply filters if provided
+    if gender:
+        query = query.filter(Survey.gender == gender)
+    if education_level:
+        query = query.filter(Survey.education_level == education_level)
+    if state:
+        query = query.filter(Survey.state == state)
+    if city:
+        query = query.filter(Survey.city == city)
+    if sentiment:
+        query = query.filter(Survey.sentiment_label == sentiment)
+
+    # Cursor-based pagination
+    if cursor:
+        last_id = decode_cursor(cursor)
         query = query.filter(Survey.id > last_id)
-    
-    # Get one extra item to determine if there are more pages
-    items = query.order_by(Survey.id).limit(page_size + 1).all()
-    
+    query = query.order_by(Survey.id)
+
+    # Get one extra item to check if there is a next page
+    items = query.limit(page_size + 1).all()
     has_more = len(items) > page_size
-    items = items[:page_size]  # Remove the extra item
-    
-    # Generate next cursor
-    next_cursor = encode_cursor(items[-1].id) if has_more else None
-    
+    items = items[:page_size]
+
+    # Prepare next cursor
+    next_cursor = encode_cursor(items[-1].id) if has_more and items else None
+
+    # Sentiment analysis for the filtered result set
+    sentiment_counts = {"Positive": 0, "Negative": 0, "Neutral": 0}
+    for survey in items:
+        if survey.sentiment_label in sentiment_counts:
+            sentiment_counts[survey.sentiment_label] += 1
+
+    total = db.query(Survey).count()
+
     return {
         "items": items,
-        "total": db.query(Survey.id).count(),
+        "total": total,
         "next_cursor": next_cursor,
         "page_size": page_size,
-        "has_more": has_more
+        "has_more": has_more,
+        "sentiment_counts": sentiment_counts
     }
 
 @router.get("/surveys/{survey_name}", response_model=List[SurveySchema])
