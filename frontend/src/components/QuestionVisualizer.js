@@ -207,29 +207,29 @@ function QuestionVisualizer({ questionId }) {
   return (
     <div className="flex">
       <div className="w-1/2 p-4">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-medium text-gray-900 mr-4">
           {questionId === 'q1_rating' && 'Q1: Rating of AI'}
           {questionId === 'q2_rating' && 'Q2: Rating of AI'}
           {questionId === 'q4_rating' && 'Q4: Rating of AI'}
         </h2>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Group By
-          </label>
-          <select
-            value={groupBy || ''}
-            onChange={(e) => setGroupBy(e.target.value || null)}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 
-                    focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-          >
-            {groupOptions.map((option) => (
-              <option key={option.value || 'overall'} value={option.value || ''}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Group By :
+        </label>
+        <select
+          value={groupBy || ''}
+          onChange={(e) => setGroupBy(e.target.value || null)}
+          className="block py-2 text-base border 
+            focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+        >
+          {groupOptions.map((option) => (
+            <option key={option.value || 'overall'} value={option.value || ''}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
         {loading && (
           <div className="flex justify-center items-center py-20">
@@ -302,7 +302,7 @@ function QuestionVisualizer({ questionId }) {
         <h2 className="text-lg font-medium text-gray-900 mb-4">
           Sentiment Analysis
         </h2>
-        <div className="mb-6">
+        <div className="mt-4">
           <div className="bg-white p-4 rounded-lg shadow mt-6">
             {sentimentData && (
               <Pie data={sentimentData} />
