@@ -58,12 +58,12 @@ def get_survey_by_name(
     db: Session = Depends(get_db)
 ):
     """
-    Get surveys filtered by survey name
-    Note: In this implementation, we only have one survey, 
-    but this would allow filtering by survey name in a real-world scenario
+    Get surveys filtered by sentiment label (Positive, Negative, Neutral)
     """
-    # Since we only have one survey in this example, we'll just return all surveys
-    surveys = db.query(Survey).all()
+    allowed = ["Positive", "Negative", "Neutral"]
+    if survey_name not in allowed:
+        raise HTTPException(status_code=400, detail="Invalid sentiment label")
+    surveys = db.query(Survey).filter(Survey.sentiment_label == survey_name).all()
     if not surveys:
         raise HTTPException(status_code=404, detail="No surveys found")
     return surveys 

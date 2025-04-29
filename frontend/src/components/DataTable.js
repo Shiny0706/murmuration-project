@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,58 +9,52 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 
+const API_URL = 'http://localhost:8000';
+
 function DataTable() {
-  const { data: surveyData, loading, error } = useSelector((state) => state.survey);
+  const [surveyData, setSurveyData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState([]);
+  const [sentimentFilter, setSentimentFilter] = useState('All');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        let response;
+        if (sentimentFilter === 'All') {
+          response = await axios.get(`${API_URL}/surveys`);
+          setSurveyData(response.data.items || []);
+        } else {
+          response = await axios.get(`${API_URL}/surveys/${sentimentFilter}`);
+          setSurveyData(response.data || []);
+        }
+      } catch (err) {
+        setError('Failed to fetch survey data');
+        setSurveyData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [sentimentFilter]);
 
   const columns = useMemo(
     () => [
-      {
-        header: 'ID',
-        accessorKey: 'id',
-      },
-      {
-        header: 'Is Human',
-        accessorKey: 'is_human',
-      },
-      {
-        header: 'Gender',
-        accessorKey: 'gender',
-      },
-      {
-        header: 'Education Level',
-        accessorKey: 'education_level',
-      },
-      {
-        header: 'Age',
-        accessorKey: 'age',
-      },
-      {
-        header: 'Q1 Rating',
-        accessorKey: 'q1_rating',
-      },
-      {
-        header: 'Q2 Rating',
-        accessorKey: 'q2_rating',
-      },
-      {
-        header: 'Q3 Response',
-        accessorKey: 'q3_open',
-      },
-      {
-        header: 'Q4 Rating',
-        accessorKey: 'q4_rating',
-      },
-      {
-        header: 'Q5 Response',
-        accessorKey: 'q5_open',
-      },
-      {
-        header: 'Sentiment Label',
-        accessorKey: 'sentiment_label',
-      },
-      
+      { header: 'ID', accessorKey: 'id' },
+      { header: 'Is Human', accessorKey: 'is_human' },
+      { header: 'Gender', accessorKey: 'gender' },
+      { header: 'Education Level', accessorKey: 'education_level' },
+      { header: 'Age', accessorKey: 'age' },
+      { header: 'Q1 Rating', accessorKey: 'q1_rating' },
+      { header: 'Q2 Rating', accessorKey: 'q2_rating' },
+      { header: 'Q3 Response', accessorKey: 'q3_open' },
+      { header: 'Q4 Rating', accessorKey: 'q4_rating' },
+      { header: 'Q5 Response', accessorKey: 'q5_open' },
+      { header: 'Sentiment Label', accessorKey: 'sentiment_label' },
     ],
     []
   );
@@ -111,16 +105,27 @@ function DataTable() {
 
   return (
     <div className="bg-white shadow rounded-lg p-4">
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col md:flex-row md:items-center md:space-x-4">
+        <label className="text-sm font-medium text-gray-700">Filter by Special Survey:</label>
+        <select
+          value={sentimentFilter}
+          onChange={e => setSentimentFilter(e.target.value)}
+          className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="All">All</option>
+          <option value="Positive">Positive</option>
+          <option value="Negative">Negative</option>
+          <option value="Neutral">Neutral</option>
+        </select>
+        <label className="text-sm font-medium text-gray-700">Search by Column:</label>
         <input
           type="text"
           value={globalFilter ?? ''}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder="Search all columns..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 mb-2 md:mb-0"
         />
       </div>
-
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -163,7 +168,6 @@ function DataTable() {
           </tbody>
         </table>
       </div>
-
       <div className="mt-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-700">
@@ -184,7 +188,6 @@ function DataTable() {
             ))}
           </select>
         </div>
-
         <div className="flex items-center space-x-2">
           <button
             className="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
