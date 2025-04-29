@@ -87,7 +87,11 @@ async def upload_csv(
         
         db.commit()
         surveys = db.query(Survey).all()
-        return {"detail": f"Successfully uploaded {len(survey_data)} survey records", "surveys": surveys}
+        sentiment_counts = {"Positive": 0, "Negative": 0, "Neutral": 0}
+        for survey in surveys:
+            if survey.sentiment_label in sentiment_counts:
+                sentiment_counts[survey.sentiment_label] += 1
+        return {"detail": f"Successfully uploaded {len(survey_data)} survey records", "surveys": surveys, "sentiment_counts": sentiment_counts}
     
     except Exception as e:
         db.rollback()

@@ -35,7 +35,7 @@ function QuestionVisualizer({ questionId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { data: surveyData } = useSelector((state) => state.survey);
-
+  
   const groupOptions = [
     { value: null, label: 'Overall' },
     { value: 'gender', label: 'By Gender' },
@@ -172,100 +172,147 @@ function QuestionVisualizer({ questionId }) {
     }
   };
 
+  const { sentimentCounts } = useSelector((state) => state.survey);
+  console.log("Sentiment Counts:", sentimentCounts);
+  const getSentimentData = () => {
+    if (!sentimentCounts) return null;
+
+    const sentimentData = {
+      labels: ['Positive', 'Negative', 'Neutral'],
+      datasets: [
+        {
+          label: 'Number of sentiment counts',
+          data: Object.values(sentimentCounts),
+          backgroundColor: [
+            'rgba(54, 162, 235, 0.5)',
+            'rgba(255, 159, 64, 0.5)',
+            'rgba(255, 206, 86, 0.5)',
+          ],
+          borderColor: [
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(255, 206, 86, 1)',
+          ],
+          borderWidth: 1,
+        },
+      ],
+    };
+    console.log("Sentiment Data:", sentimentData);
+    return sentimentData;
+  };
+
   const chartData = getChartData();
+  const sentimentData = getSentimentData();
 
   return (
-    <div>
-      <h2 className="text-lg font-medium text-gray-900 mb-4">
-        {questionId === 'q1_rating' && 'Q1: How much have you thought about AI impact?'}
-        {questionId === 'q2_rating' && 'Q2: Do you think AI will help with tasks?'}
-        {questionId === 'q4_rating' && 'Q4: How do you feel about AI in your field?'}
-      </h2>
+    <div className="flex">
+      <div className="w-1/2 p-4">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
+          {questionId === 'q1_rating' && 'Q1: Rating of AI'}
+          {questionId === 'q2_rating' && 'Q2: Rating of AI'}
+          {questionId === 'q4_rating' && 'Q4: Rating of AI'}
+        </h2>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Group By
-        </label>
-        <select
-          value={groupBy || ''}
-          onChange={(e) => setGroupBy(e.target.value || null)}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 
-                   focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-        >
-          {groupOptions.map((option) => (
-            <option key={option.value || 'overall'} value={option.value || ''}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {loading && (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Group By
+          </label>
+          <select
+            value={groupBy || ''}
+            onChange={(e) => setGroupBy(e.target.value || null)}
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 
+                    focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          >
+            {groupOptions.map((option) => (
+              <option key={option.value || 'overall'} value={option.value || ''}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
-            <div className="mt-2 text-sm text-red-700">
-              <p>{error}</p>
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-md bg-red-50 p-4">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {!loading && !error && chartData && (
-        <div className="bg-white p-4 rounded-lg shadow">
-          {isRatingQuestion && !groupBy ? (
-            <Pie
-              data={chartData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'top',
+        {!loading && !error && chartData && (
+          <div className="bg-white p-4 rounded-lg shadow">
+            {isRatingQuestion && !groupBy ? (
+              <Pie
+                data={chartData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: true,
+                      text: 'Rating Distribution'
+                    }
+                  }
+                }}
+              />
+            ) : (
+              <Bar
+                data={chartData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: true,
+                      text: groupBy ? 'Average Rating by Group' : 'Top 5 Most Common Responses'
+                    }
                   },
-                  title: {
-                    display: true,
-                    text: 'Rating Distribution'
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
                   }
-                }
-              }}
-            />
-          ) : (
-            <Bar
-              data={chartData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'top',
-                  },
-                  title: {
-                    display: true,
-                    text: groupBy ? 'Average Rating by Group' : 'Top 5 Most Common Responses'
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true
-                  }
-                }
-              }}
-            />
-          )}
-        </div>
-      )}
+                }}
+              />
+            )}
+          </div>
+        )}
 
-      {!loading && !error && !chartData && (
-        <div className="text-center text-gray-500 py-4">
-          No chart data available for this view
+        {!loading && !error && !chartData && (
+          <div className="text-center text-gray-500 py-4">
+            No chart data available for this view
+          </div>
+        )}
+      </div>
+      
+      <div className="w-1/2 p-4">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
+          Sentiment Analysis
+        </h2>
+        <div className="mb-6">
+          <div className="bg-white p-4 rounded-lg shadow mt-6">
+            {sentimentData && (
+              <Pie data={sentimentData} />
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
+
+    
   );
 }
 

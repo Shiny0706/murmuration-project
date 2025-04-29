@@ -26,6 +26,7 @@ def get_all_surveys(
 ):
     """
     Get all survey responses with optional filtering
+    Also return sentiment counts for the filtered result set
     """
     query = db.query(Survey)
     
@@ -43,7 +44,13 @@ def get_all_surveys(
         
     total = query.count()
     surveys = query.offset(skip).limit(limit).all()
-    return {"total": total, "items": surveys}
+
+    # Sentiment analysis for the filtered result set
+    sentiment_counts = {"Positive": 0, "Negative": 0, "Neutral": 0}
+    for survey in surveys:
+        if survey.sentiment_label in sentiment_counts:
+            sentiment_counts[survey.sentiment_label] += 1
+    return {"total": total, "items": surveys, "sentiment_counts": sentiment_counts}
 
 @router.get("/surveys/{survey_name}", response_model=List[SurveySchema])
 def get_survey_by_name(

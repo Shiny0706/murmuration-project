@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setSurveyData, setLoading, setError } from '../store/surveySlice';
+import { setSurveyData, setSentimentCounts, setLoading, setError } from '../store/surveySlice';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8000';
@@ -28,6 +28,7 @@ function SurveyUploader() {
         },
       });
       dispatch(setSurveyData(response.data.surveys));
+      dispatch(setSentimentCounts(response.data.sentiment_counts));
     } catch (error) {
       dispatch(setError(error.response?.data?.detail || 'Failed to upload file'));
     }

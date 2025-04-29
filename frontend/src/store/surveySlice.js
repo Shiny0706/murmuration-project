@@ -15,6 +15,9 @@ const surveySlice = createSlice({
       state.loading = false;
       state.error = null;
     },
+    setSentimentCounts: (state, action) => {
+      state.sentimentCounts = action.payload;
+    },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -25,5 +28,5 @@ const surveySlice = createSlice({
   },
 });
 
-export const { setSurveyData, setLoading, setError } = surveySlice.actions;
+export const { setSurveyData, setSentimentCounts, setLoading, setError } = surveySlice.actions;
 export default surveySlice.reducer; 
