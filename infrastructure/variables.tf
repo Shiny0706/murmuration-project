@@ -4,8 +4,13 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
+variable "ec2_instance_type" {
+  description = "EC2 instance type for FastAPI backend"
   type        = string
-  default     = "dev"
-} 
+  default     = "t3.micro"
+}
+
+variable "key_name" {
+  description = "Name of the AWS key pair for SSH access"
+  type        = string
+}
